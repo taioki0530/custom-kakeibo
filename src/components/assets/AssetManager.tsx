@@ -4,9 +4,11 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   getAssets,
   createAsset,
@@ -31,6 +33,7 @@ export default function AssetManager() {
   const [newBalance, setNewBalance] = useState("");
   const [showPresets, setShowPresets] = useState(false);
   const refresh = useDashboardStore((s) => s.refresh);
+  const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     load();
@@ -96,15 +99,34 @@ export default function AssetManager() {
   const existingNames = new Set(assets.map((a) => a.name));
   const availablePresets = PRESET_ASSETS.filter((p) => !existingNames.has(p.name));
 
-  // Group by type
   const groups = ASSET_TYPES.map((t) => ({
     type: t,
     label: ASSET_TYPE_LABELS[t],
     items: assets.filter((a) => a.assetType === t),
   })).filter((g) => g.items.length > 0);
 
+  function scrollToBottom() {
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 120);
+  }
+
+  function handleShowAdd() {
+    setShowAdd(true);
+    scrollToBottom();
+  }
+
   return (
-    <ScrollView className="flex-1 bg-gray-50">
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={88}
+    >
+      <ScrollView
+        ref={scrollRef}
+        className="flex-1 bg-gray-50"
+        keyboardShouldPersistTaps="handled"
+      >
       <View className="px-4 pt-4 pb-8 gap-4">
         {groups.map((group) => (
           <View key={group.type}>
@@ -218,6 +240,7 @@ export default function AssetManager() {
               placeholder="名前（例：メルペイ）"
               className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm"
               autoFocus
+              onFocus={scrollToBottom}
             />
             <TextInput
               value={newBalance}
@@ -225,6 +248,7 @@ export default function AssetManager() {
               keyboardType="number-pad"
               placeholder="現在残高（円）"
               className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm"
+              onFocus={scrollToBottom}
             />
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View className="flex-row gap-2">
@@ -258,7 +282,7 @@ export default function AssetManager() {
           </View>
         ) : (
           <TouchableOpacity
-            onPress={() => setShowAdd(true)}
+            onPress={handleShowAdd}
             className="bg-white rounded-2xl shadow-sm px-4 py-3 flex-row items-center gap-2"
           >
             <Text className="text-indigo-500 text-xl">+</Text>
@@ -266,6 +290,7 @@ export default function AssetManager() {
           </TouchableOpacity>
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

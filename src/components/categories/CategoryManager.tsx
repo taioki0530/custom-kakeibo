@@ -4,9 +4,11 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   getCategories,
   createCategory,
@@ -28,6 +30,7 @@ export default function CategoryManager() {
   const [newName, setNewName] = useState("");
   const [newColor, setNewColor] = useState(PRESET_COLORS[0]);
   const [showAdd, setShowAdd] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     load();
@@ -73,8 +76,24 @@ export default function CategoryManager() {
 
   const filtered = categories.filter((c) => c.type === tab);
 
+  function handleShowAdd() {
+    setShowAdd(true);
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  }
+
   return (
-    <ScrollView className="flex-1 bg-gray-50">
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={88}
+    >
+      <ScrollView
+        ref={scrollRef}
+        className="flex-1 bg-gray-50"
+        keyboardShouldPersistTaps="handled"
+      >
       <View className="px-4 pt-4 pb-8 gap-4">
         {/* Tab */}
         <View className="flex-row bg-white rounded-2xl p-1 shadow-sm">
@@ -174,7 +193,7 @@ export default function CategoryManager() {
           </View>
         ) : (
           <TouchableOpacity
-            onPress={() => setShowAdd(true)}
+            onPress={handleShowAdd}
             className="bg-white rounded-2xl shadow-sm px-4 py-3 flex-row items-center gap-2"
           >
             <Text className="text-indigo-500 text-xl">+</Text>
@@ -184,7 +203,8 @@ export default function CategoryManager() {
           </TouchableOpacity>
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

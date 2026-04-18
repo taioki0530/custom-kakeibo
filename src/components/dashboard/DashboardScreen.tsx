@@ -3,8 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import MonthNav from "./MonthNav";
 import SummaryBar from "./SummaryBar";
-import AssetSummary from "./AssetSummary";
-import CategoryBreakdown from "./CategoryBreakdown";
+import BreakdownTabs from "./BreakdownTabs";
 import DailyExpenseGrid from "./DailyExpenseGrid";
 import TransactionList from "./TransactionList";
 import type { DashboardData, TransactionData } from "../../types";
@@ -62,8 +61,12 @@ export default function DashboardScreen({
           onScrollEndDrag={onRefresh}
         >
           <SummaryBar summary={data.summary} />
-          <AssetSummary assetGroups={data.assetGroups} onManage={openAssets} />
-          <CategoryBreakdown breakdown={data.categoryBreakdown} onManage={openCategories} />
+          <BreakdownTabs
+            assetGroups={data.assetGroups}
+            categoryBreakdown={data.categoryBreakdown}
+            onManageAssets={openAssets}
+            onManageCategories={openCategories}
+          />
           <DailyExpenseGrid year={year} month={month} dailyTotals={data.dailyTotals} />
           <TransactionList transactions={data.transactions} onPress={openTransaction} />
         </ScrollView>
